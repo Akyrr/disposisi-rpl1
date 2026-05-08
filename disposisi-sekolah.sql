@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict jr20lez87re4wR9QZi7PmG7BoDHmehrWpjK9uAovhPkf34ULuMIaOkDEEOwXwVW
+\restrict jXgzLOgYz6VZlsvTMIVlUowh3PveTF3NMay5XyFwZq8cvLIkpaPgC2bGKAT2ROS
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -350,6 +350,44 @@ ALTER SEQUENCE public.notifikasi_id_notifikasi_seq OWNED BY public.notifikasi.id
 
 
 --
+-- Name: otp; Type: TABLE; Schema: public; Owner: rpl1
+--
+
+CREATE TABLE public.otp (
+    id_otp integer NOT NULL,
+    id_user integer NOT NULL,
+    kode_otp character varying(10) NOT NULL,
+    expires_at timestamp without time zone NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    is_used boolean DEFAULT false
+);
+
+
+ALTER TABLE public.otp OWNER TO rpl1;
+
+--
+-- Name: otp_id_otp_seq; Type: SEQUENCE; Schema: public; Owner: rpl1
+--
+
+CREATE SEQUENCE public.otp_id_otp_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.otp_id_otp_seq OWNER TO rpl1;
+
+--
+-- Name: otp_id_otp_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: rpl1
+--
+
+ALTER SEQUENCE public.otp_id_otp_seq OWNED BY public.otp.id_otp;
+
+
+--
 -- Name: riwayat_alur_surat_id_riwayat_seq; Type: SEQUENCE; Schema: public; Owner: rpl1
 --
 
@@ -561,6 +599,13 @@ ALTER TABLE ONLY public.notifikasi ALTER COLUMN id_notifikasi SET DEFAULT nextva
 
 
 --
+-- Name: otp id_otp; Type: DEFAULT; Schema: public; Owner: rpl1
+--
+
+ALTER TABLE ONLY public.otp ALTER COLUMN id_otp SET DEFAULT nextval('public.otp_id_otp_seq'::regclass);
+
+
+--
 -- Name: surat_keluar id_surat_keluar; Type: DEFAULT; Schema: public; Owner: rpl1
 --
 
@@ -645,6 +690,14 @@ COPY public.notifikasi (id_notifikasi, id_penerima, id_pengirim, jenis, judul, p
 
 
 --
+-- Data for Name: otp; Type: TABLE DATA; Schema: public; Owner: rpl1
+--
+
+COPY public.otp (id_otp, id_user, kode_otp, expires_at, created_at, is_used) FROM stdin;
+\.
+
+
+--
 -- Data for Name: surat_keluar; Type: TABLE DATA; Schema: public; Owner: rpl1
 --
 
@@ -716,6 +769,13 @@ SELECT pg_catalog.setval('public.log_aktivitas_id_log_seq', 1, false);
 --
 
 SELECT pg_catalog.setval('public.notifikasi_id_notifikasi_seq', 1, false);
+
+
+--
+-- Name: otp_id_otp_seq; Type: SEQUENCE SET; Schema: public; Owner: rpl1
+--
+
+SELECT pg_catalog.setval('public.otp_id_otp_seq', 1, false);
 
 
 --
@@ -792,6 +852,14 @@ ALTER TABLE ONLY public.log
 
 ALTER TABLE ONLY public.notifikasi
     ADD CONSTRAINT notifikasi_pkey PRIMARY KEY (id_notifikasi);
+
+
+--
+-- Name: otp otp_pkey; Type: CONSTRAINT; Schema: public; Owner: rpl1
+--
+
+ALTER TABLE ONLY public.otp
+    ADD CONSTRAINT otp_pkey PRIMARY KEY (id_otp);
 
 
 --
@@ -981,6 +1049,14 @@ ALTER TABLE ONLY public.notifikasi
 
 
 --
+-- Name: otp otp_id_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: rpl1
+--
+
+ALTER TABLE ONLY public.otp
+    ADD CONSTRAINT otp_id_user_fkey FOREIGN KEY (id_user) REFERENCES public.users(id_user);
+
+
+--
 -- Name: log_distribusi riwayat_alur_surat_id_user_pelaku_fkey; Type: FK CONSTRAINT; Schema: public; Owner: rpl1
 --
 
@@ -1016,5 +1092,5 @@ ALTER TABLE ONLY public.user_jabatan
 -- PostgreSQL database dump complete
 --
 
-\unrestrict jr20lez87re4wR9QZi7PmG7BoDHmehrWpjK9uAovhPkf34ULuMIaOkDEEOwXwVW
+\unrestrict jXgzLOgYz6VZlsvTMIVlUowh3PveTF3NMay5XyFwZq8cvLIkpaPgC2bGKAT2ROS
 
