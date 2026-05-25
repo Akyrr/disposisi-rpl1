@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict jVO8sbV7dZ3wCw33iglpqWKmodEpJa89rlU8bq8mi0JegFyjfQVeiOVAPPwy00c
+\restrict EgWJP4Ba9n0HAzafJQD0tR2B5EreJaGzwgfzDNC61dBv7nbfrf7sboKb82og01k
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -122,8 +122,6 @@ SET default_table_access_method = heap;
 
 CREATE TABLE public.disposisi (
     id_disposisi integer NOT NULL,
-    sifat character varying(100),
-    catatan text,
     tanggapan_saran text,
     proses_lanjut text,
     koordinasi_konfirmasi text,
@@ -134,8 +132,10 @@ CREATE TABLE public.disposisi (
     status_disposisi character varying(50) DEFAULT 'belum_dibaca'::character varying,
     status_approval character varying(50) DEFAULT 'menunggu'::character varying,
     approval_at timestamp without time zone,
+    catatan_kepsek text,
+    catatan_waka text,
+    id_jabatan_penerima integer,
     CONSTRAINT chk_status_approval CHECK (((status_approval)::text = ANY ((ARRAY['menunggu'::character varying, 'disetujui'::character varying, 'ditolak'::character varying])::text[]))),
-    CONSTRAINT disposisi_sifat_check CHECK (((sifat)::text = ANY ((ARRAY['segera'::character varying, 'rahasia'::character varying, 'sangat_rahasia'::character varying])::text[]))),
     CONSTRAINT disposisi_status_disposisi_check CHECK (((status_disposisi)::text = ANY ((ARRAY['belum_dibaca'::character varying, 'dibaca'::character varying, 'sedang_dikerjakan'::character varying, 'selesai'::character varying])::text[])))
 );
 
@@ -212,7 +212,7 @@ CREATE TABLE public.jabatan (
     id_jabatan integer NOT NULL,
     nama_jabatan character varying(50) NOT NULL,
     level_akses character varying(20),
-    CONSTRAINT jabatan_level_akses_check CHECK (((level_akses)::text = ANY ((ARRAY['kepsek'::character varying, 'admin'::character varying, 'user'::character varying])::text[])))
+    CONSTRAINT jabatan_level_akses_check CHECK (((level_akses)::text = ANY ((ARRAY['kepsek'::character varying, 'admin'::character varying, 'pegawai'::character varying, 'waka'::character varying, 'user'::character varying])::text[])))
 );
 
 
@@ -625,7 +625,7 @@ ALTER TABLE ONLY public.users ALTER COLUMN id_user SET DEFAULT nextval('public.u
 -- Data for Name: disposisi; Type: TABLE DATA; Schema: public; Owner: rpl1
 --
 
-COPY public.disposisi (id_disposisi, sifat, catatan, tanggapan_saran, proses_lanjut, koordinasi_konfirmasi, id_surat_masuk, id_kepsek, id_penerima, tanggal_disposisi, status_disposisi, status_approval, approval_at) FROM stdin;
+COPY public.disposisi (id_disposisi, tanggapan_saran, proses_lanjut, koordinasi_konfirmasi, id_surat_masuk, id_kepsek, id_penerima, tanggal_disposisi, status_disposisi, status_approval, approval_at, catatan_kepsek, catatan_waka, id_jabatan_penerima) FROM stdin;
 \.
 
 
@@ -642,21 +642,23 @@ COPY public.distribusi_sk (id_distribusi, id_sk, id_user, status, distribute_at,
 --
 
 COPY public.jabatan (id_jabatan, nama_jabatan, level_akses) FROM stdin;
-1	Kepala Sekolah	kepsek
-2	Tata Usaha	admin
-3	Waka Kesiswaan	user
-4	Waka Sarpras	user
-5	Waka Kurikulum	user
-6	BK	user
-7	BKK	user
-8	Kapro RPL	user
-9	Kapro TKJ	user
-10	Kapro DKV	user
-11	Kapro BC	user
-12	Kapro TEI	user
-13	Kapro TAV	user
-14	Kapro AN	user
-15	Kapro MT	user
+1	kepala sekolah	kepsek
+2	admin	admin
+3	pegawai	pegawai
+5	waka kesiswaan	waka
+6	waka kurikulum	waka
+7	waka sarpras	waka
+8	waka humas	waka
+9	bkk	user
+10	perpustakaan	user
+11	kapro rpl	user
+12	kapro tkj	user
+13	kapro dkv	user
+14	kapro animasi	user
+15	kapro ei	user
+16	kapro mt	user
+17	kapro av	user
+18	kapro bc	user
 \.
 
 
@@ -715,8 +717,11 @@ COPY public.surat_masuk (id_surat_masuk, no_surat, perihal_surat, asal_surat, ta
 COPY public.user_jabatan (id_user, id_jabatan, is_primary) FROM stdin;
 1	1	t
 2	2	t
-3	6	t
-3	7	f
+3	3	t
+4	11	t
+5	2	t
+6	9	t
+6	8	f
 \.
 
 
@@ -725,9 +730,12 @@ COPY public.user_jabatan (id_user, id_jabatan, is_primary) FROM stdin;
 --
 
 COPY public.users (id_user, nama, email, password, created_at) FROM stdin;
-1	dummy_kepsek	dummy_kepsek@gmail.com	12345	2026-05-02 12:40:43.332647
-2	dummy_tu	dummy_tu@gmail.com	12345	2026-05-02 12:40:43.332647
-3	dummy_bk	dummybk@gmail.com	12345	2026-05-02 12:42:35.084137
+1	dummy_kepsek	dummy_kepsek@gmail.com	12345	2026-05-25 19:44:51.727343
+2	dummy_admin	dummy_admin@gmail.com	12345	2026-05-25 19:46:19.919197
+3	dummy_pegawai	dummy_peagwai@gmail.com	12345	2026-05-25 19:46:19.919197
+4	dummy_rpl	dummy_rpl@gmail.com	12345	2026-05-25 19:46:19.919197
+5	dummy_admin2	dummy_admin2@gmail.com	12345	2026-05-25 19:47:04.095179
+6	dummy_bkk	dummy_bkk@gmail.com	12345	2026-05-25 19:51:32.59051
 \.
 
 
@@ -749,7 +757,7 @@ SELECT pg_catalog.setval('public.distribusi_surat_keluar_id_distribusi_seq', 1, 
 -- Name: jabatan_id_jabatan_seq; Type: SEQUENCE SET; Schema: public; Owner: rpl1
 --
 
-SELECT pg_catalog.setval('public.jabatan_id_jabatan_seq', 15, true);
+SELECT pg_catalog.setval('public.jabatan_id_jabatan_seq', 1, false);
 
 
 --
@@ -798,7 +806,7 @@ SELECT pg_catalog.setval('public.surat_masuk_id_surat_masuk_seq', 1, false);
 -- Name: users_id_user_seq; Type: SEQUENCE SET; Schema: public; Owner: rpl1
 --
 
-SELECT pg_catalog.setval('public.users_id_user_seq', 3, true);
+SELECT pg_catalog.setval('public.users_id_user_seq', 6, true);
 
 
 --
@@ -948,6 +956,14 @@ CREATE TRIGGER trg_surat_masuk_updated BEFORE UPDATE ON public.surat_masuk FOR E
 
 
 --
+-- Name: disposisi disposisi_id_jabatan_penerima_fkey; Type: FK CONSTRAINT; Schema: public; Owner: rpl1
+--
+
+ALTER TABLE ONLY public.disposisi
+    ADD CONSTRAINT disposisi_id_jabatan_penerima_fkey FOREIGN KEY (id_jabatan_penerima) REFERENCES public.jabatan(id_jabatan);
+
+
+--
 -- Name: distribusi_sk distribusi_surat_keluar_id_penerima_fkey; Type: FK CONSTRAINT; Schema: public; Owner: rpl1
 --
 
@@ -1087,5 +1103,5 @@ ALTER TABLE ONLY public.user_jabatan
 -- PostgreSQL database dump complete
 --
 
-\unrestrict jVO8sbV7dZ3wCw33iglpqWKmodEpJa89rlU8bq8mi0JegFyjfQVeiOVAPPwy00c
+\unrestrict EgWJP4Ba9n0HAzafJQD0tR2B5EreJaGzwgfzDNC61dBv7nbfrf7sboKb82og01k
 

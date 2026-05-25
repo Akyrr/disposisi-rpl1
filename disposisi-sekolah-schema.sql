@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict EwPCbGfkFsPjHm8dSBxIbYfJ4a71xuiIiheSVfQOhi6FwPpT0XfYEGOGJtpM2bS
+\restrict bIfMxpg5G7KZP2Ba0VtnAwIL9i9Xim1VZFaq7bMydU6HUUgFQbd5upoVpxugYOv
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -122,8 +122,6 @@ SET default_table_access_method = heap;
 
 CREATE TABLE public.disposisi (
     id_disposisi integer NOT NULL,
-    sifat character varying(100),
-    catatan text,
     tanggapan_saran text,
     proses_lanjut text,
     koordinasi_konfirmasi text,
@@ -134,8 +132,10 @@ CREATE TABLE public.disposisi (
     status_disposisi character varying(50) DEFAULT 'belum_dibaca'::character varying,
     status_approval character varying(50) DEFAULT 'menunggu'::character varying,
     approval_at timestamp without time zone,
+    catatan_kepsek text,
+    catatan_waka text,
+    id_jabatan_penerima integer,
     CONSTRAINT chk_status_approval CHECK (((status_approval)::text = ANY ((ARRAY['menunggu'::character varying, 'disetujui'::character varying, 'ditolak'::character varying])::text[]))),
-    CONSTRAINT disposisi_sifat_check CHECK (((sifat)::text = ANY ((ARRAY['segera'::character varying, 'rahasia'::character varying, 'sangat_rahasia'::character varying])::text[]))),
     CONSTRAINT disposisi_status_disposisi_check CHECK (((status_disposisi)::text = ANY ((ARRAY['belum_dibaca'::character varying, 'dibaca'::character varying, 'sedang_dikerjakan'::character varying, 'selesai'::character varying])::text[])))
 );
 
@@ -212,7 +212,7 @@ CREATE TABLE public.jabatan (
     id_jabatan integer NOT NULL,
     nama_jabatan character varying(50) NOT NULL,
     level_akses character varying(20),
-    CONSTRAINT jabatan_level_akses_check CHECK (((level_akses)::text = ANY ((ARRAY['kepsek'::character varying, 'admin'::character varying, 'user'::character varying])::text[])))
+    CONSTRAINT jabatan_level_akses_check CHECK (((level_akses)::text = ANY ((ARRAY['kepsek'::character varying, 'admin'::character varying, 'pegawai'::character varying, 'waka'::character varying, 'user'::character varying])::text[])))
 );
 
 
@@ -768,6 +768,14 @@ CREATE TRIGGER trg_surat_masuk_updated BEFORE UPDATE ON public.surat_masuk FOR E
 
 
 --
+-- Name: disposisi disposisi_id_jabatan_penerima_fkey; Type: FK CONSTRAINT; Schema: public; Owner: rpl1
+--
+
+ALTER TABLE ONLY public.disposisi
+    ADD CONSTRAINT disposisi_id_jabatan_penerima_fkey FOREIGN KEY (id_jabatan_penerima) REFERENCES public.jabatan(id_jabatan);
+
+
+--
 -- Name: distribusi_sk distribusi_surat_keluar_id_penerima_fkey; Type: FK CONSTRAINT; Schema: public; Owner: rpl1
 --
 
@@ -907,5 +915,5 @@ ALTER TABLE ONLY public.user_jabatan
 -- PostgreSQL database dump complete
 --
 
-\unrestrict EwPCbGfkFsPjHm8dSBxIbYfJ4a71xuiIiheSVfQOhi6FwPpT0XfYEGOGJtpM2bS
+\unrestrict bIfMxpg5G7KZP2Ba0VtnAwIL9i9Xim1VZFaq7bMydU6HUUgFQbd5upoVpxugYOv
 
