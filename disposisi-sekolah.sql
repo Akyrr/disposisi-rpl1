@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict EgWJP4Ba9n0HAzafJQD0tR2B5EreJaGzwgfzDNC61dBv7nbfrf7sboKb82og01k
+\restrict YeeSmn3obn273TrwPDX2kQFPVG0RPIhVUAI7Ir1rYyyGJz5KAwN2RZuNMP59QWu
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -133,7 +133,6 @@ CREATE TABLE public.disposisi (
     status_approval character varying(50) DEFAULT 'menunggu'::character varying,
     approval_at timestamp without time zone,
     catatan_kepsek text,
-    catatan_waka text,
     id_jabatan_penerima integer,
     CONSTRAINT chk_status_approval CHECK (((status_approval)::text = ANY ((ARRAY['menunggu'::character varying, 'disetujui'::character varying, 'ditolak'::character varying])::text[]))),
     CONSTRAINT disposisi_status_disposisi_check CHECK (((status_disposisi)::text = ANY ((ARRAY['belum_dibaca'::character varying, 'dibaca'::character varying, 'sedang_dikerjakan'::character varying, 'selesai'::character varying])::text[])))
@@ -171,11 +170,13 @@ ALTER SEQUENCE public.disposisi_id_disposisi_seq OWNED BY public.disposisi.id_di
 CREATE TABLE public.distribusi_sk (
     id_distribusi integer CONSTRAINT distribusi_surat_keluar_id_distribusi_not_null NOT NULL,
     id_sk integer CONSTRAINT distribusi_surat_keluar_id_surat_keluar_not_null NOT NULL,
-    id_user integer CONSTRAINT distribusi_surat_keluar_id_penerima_not_null NOT NULL,
+    id_user integer,
     status character varying(50) DEFAULT 'belum_dibaca'::character varying,
     distribute_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     read_at timestamp without time zone,
     catatan text,
+    id_jabatan integer,
+    CONSTRAINT chk_xor_distribusi_penerima CHECK ((((id_user IS NOT NULL) AND (id_jabatan IS NULL)) OR ((id_user IS NULL) AND (id_jabatan IS NOT NULL)))),
     CONSTRAINT distribusi_surat_keluar_status_check CHECK (((status)::text = ANY ((ARRAY['belum_dibaca'::character varying, 'dibaca'::character varying, 'selesai'::character varying])::text[])))
 );
 
@@ -212,7 +213,7 @@ CREATE TABLE public.jabatan (
     id_jabatan integer NOT NULL,
     nama_jabatan character varying(50) NOT NULL,
     level_akses character varying(20),
-    CONSTRAINT jabatan_level_akses_check CHECK (((level_akses)::text = ANY ((ARRAY['kepsek'::character varying, 'admin'::character varying, 'pegawai'::character varying, 'waka'::character varying, 'user'::character varying])::text[])))
+    CONSTRAINT jabatan_level_akses_check CHECK (((level_akses)::text = ANY (ARRAY[('kepsek'::character varying)::text, ('admin'::character varying)::text, ('pegawai'::character varying)::text, ('user'::character varying)::text])))
 );
 
 
@@ -625,7 +626,7 @@ ALTER TABLE ONLY public.users ALTER COLUMN id_user SET DEFAULT nextval('public.u
 -- Data for Name: disposisi; Type: TABLE DATA; Schema: public; Owner: rpl1
 --
 
-COPY public.disposisi (id_disposisi, tanggapan_saran, proses_lanjut, koordinasi_konfirmasi, id_surat_masuk, id_kepsek, id_penerima, tanggal_disposisi, status_disposisi, status_approval, approval_at, catatan_kepsek, catatan_waka, id_jabatan_penerima) FROM stdin;
+COPY public.disposisi (id_disposisi, tanggapan_saran, proses_lanjut, koordinasi_konfirmasi, id_surat_masuk, id_kepsek, id_penerima, tanggal_disposisi, status_disposisi, status_approval, approval_at, catatan_kepsek, id_jabatan_penerima) FROM stdin;
 \.
 
 
@@ -633,7 +634,7 @@ COPY public.disposisi (id_disposisi, tanggapan_saran, proses_lanjut, koordinasi_
 -- Data for Name: distribusi_sk; Type: TABLE DATA; Schema: public; Owner: rpl1
 --
 
-COPY public.distribusi_sk (id_distribusi, id_sk, id_user, status, distribute_at, read_at, catatan) FROM stdin;
+COPY public.distribusi_sk (id_distribusi, id_sk, id_user, status, distribute_at, read_at, catatan, id_jabatan) FROM stdin;
 \.
 
 
@@ -645,20 +646,20 @@ COPY public.jabatan (id_jabatan, nama_jabatan, level_akses) FROM stdin;
 1	kepala sekolah	kepsek
 2	admin	admin
 3	pegawai	pegawai
-5	waka kesiswaan	waka
-6	waka kurikulum	waka
-7	waka sarpras	waka
-8	waka humas	waka
 9	bkk	user
 10	perpustakaan	user
 11	kapro rpl	user
 12	kapro tkj	user
 13	kapro dkv	user
-14	kapro animasi	user
 15	kapro ei	user
 16	kapro mt	user
 17	kapro av	user
 18	kapro bc	user
+5	waka kesiswaan	user
+6	waka kurikulum	user
+7	waka sarpras	user
+8	waka humas	user
+14	kapro an	user
 \.
 
 
@@ -928,6 +929,13 @@ CREATE TRIGGER trg_distribusi_dibaca BEFORE UPDATE ON public.distribusi_sk FOR E
 
 
 --
+-- Name: distribusi_sk trg_distribusi_sk_dibaca; Type: TRIGGER; Schema: public; Owner: rpl1
+--
+
+CREATE TRIGGER trg_distribusi_sk_dibaca BEFORE UPDATE ON public.distribusi_sk FOR EACH ROW EXECUTE FUNCTION public.set_tanggal_dibaca();
+
+
+--
 -- Name: surat_masuk trg_log_surat_masuk; Type: TRIGGER; Schema: public; Owner: rpl1
 --
 
@@ -961,6 +969,14 @@ CREATE TRIGGER trg_surat_masuk_updated BEFORE UPDATE ON public.surat_masuk FOR E
 
 ALTER TABLE ONLY public.disposisi
     ADD CONSTRAINT disposisi_id_jabatan_penerima_fkey FOREIGN KEY (id_jabatan_penerima) REFERENCES public.jabatan(id_jabatan);
+
+
+--
+-- Name: distribusi_sk distribusi_sk_id_jabatan_fkey; Type: FK CONSTRAINT; Schema: public; Owner: rpl1
+--
+
+ALTER TABLE ONLY public.distribusi_sk
+    ADD CONSTRAINT distribusi_sk_id_jabatan_fkey FOREIGN KEY (id_jabatan) REFERENCES public.jabatan(id_jabatan);
 
 
 --
@@ -1103,5 +1119,5 @@ ALTER TABLE ONLY public.user_jabatan
 -- PostgreSQL database dump complete
 --
 
-\unrestrict EgWJP4Ba9n0HAzafJQD0tR2B5EreJaGzwgfzDNC61dBv7nbfrf7sboKb82og01k
+\unrestrict YeeSmn3obn273TrwPDX2kQFPVG0RPIhVUAI7Ir1rYyyGJz5KAwN2RZuNMP59QWu
 
