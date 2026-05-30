@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict YeeSmn3obn273TrwPDX2kQFPVG0RPIhVUAI7Ir1rYyyGJz5KAwN2RZuNMP59QWu
+\restrict 59DPgnAs8utnnJUWAZTUDvTcZcYev9DQpkZiJJ0PjvvE0vWAdL2f2ct1N0cAKG4
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -647,7 +647,6 @@ COPY public.jabatan (id_jabatan, nama_jabatan, level_akses) FROM stdin;
 2	admin	admin
 3	pegawai	pegawai
 9	bkk	user
-10	perpustakaan	user
 11	kapro rpl	user
 12	kapro tkj	user
 13	kapro dkv	user
@@ -660,6 +659,8 @@ COPY public.jabatan (id_jabatan, nama_jabatan, level_akses) FROM stdin;
 7	waka sarpras	user
 8	waka humas	user
 14	kapro an	user
+19	bk	user
+20	prakerin	user
 \.
 
 
@@ -758,7 +759,7 @@ SELECT pg_catalog.setval('public.distribusi_surat_keluar_id_distribusi_seq', 1, 
 -- Name: jabatan_id_jabatan_seq; Type: SEQUENCE SET; Schema: public; Owner: rpl1
 --
 
-SELECT pg_catalog.setval('public.jabatan_id_jabatan_seq', 1, false);
+SELECT pg_catalog.setval('public.jabatan_id_jabatan_seq', 1, true);
 
 
 --
@@ -1119,5 +1120,5 @@ ALTER TABLE ONLY public.user_jabatan
 -- PostgreSQL database dump complete
 --
 
-\unrestrict YeeSmn3obn273TrwPDX2kQFPVG0RPIhVUAI7Ir1rYyyGJz5KAwN2RZuNMP59QWu
+\unrestrict 59DPgnAs8utnnJUWAZTUDvTcZcYev9DQpkZiJJ0PjvvE0vWAdL2f2ct1N0cAKG4
 
